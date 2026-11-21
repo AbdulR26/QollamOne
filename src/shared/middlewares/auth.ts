@@ -1,13 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { env } from '../../config/env.js';
 import { AppError } from '../errors/AppError.js';
 
-export interface AuthUser {
-  id: string;
-  role: string;
+export interface AuthUserPayload {
+  id: number;
+  email: string;
+  name: string;
+  roles: string[];
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: AuthUser;
+  user?: AuthUserPayload;
+}
+
+interface TokenClaims {
+  sub: number | string;
+  email: string;
+  name: string;
+  roles: string[];
 }
 
 export const authenticate = (
@@ -15,20 +26,41 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ): void => {
+  const cookieToken = req.cookies?.[env.jwt.cookieName] as string | undefined;
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const bearerToken =
+    authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+
+  const token = cookieToken || bearerToken;
+  if (!token) {
     return next(new AppError('Unauthorized', 401));
   }
 
-  // TODO: Verify token (e.g., JWT) and attach user to req.user
-  next();
+  try {
+    const decoded = jwt.verify(token, env.jwt.secret) as TokenClaims;
+    req.user = {
+      id: Number(decoded.sub),
+      email: decoded.email,
+      name: decoded.name,
+      roles: Array.isArray(decoded.roles) ? decoded.roles : [],
+    };
+    next();
+  } catch {
+    next(new AppError('Invalid or expired session', 401));
+  }
 };
 
-export const authorize = (...roles: string[]) => {
+export const authorize = (...allowedRoles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user) {
+      return next(new AppError('Unauthorized', 401));
+    }
+
+    const hasRole = req.user.roles.some((role) => allowedRoles.includes(role));
+    if (!hasRole) {
       return next(new AppError('Forbidden', 403));
     }
+
     next();
   };
 };
