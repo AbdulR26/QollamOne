@@ -1,62 +1,23 @@
-import { FormEvent, useState } from 'react';
-
-export interface AuthUser {
-  id: number;
-  name: string;
-  email: string;
-  photo: string | null;
-  roles: string[];
-}
+import { AuthUser } from './auth.types.ts';
+import { useLogin } from './useLogin.ts';
 
 interface LoginPageProps {
   onLoginSuccess: (user: AuthUser) => void;
 }
 
 export function LoginPage({ onLoginSuccess }: LoginPageProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      const text = await res.text();
-      let json: { data?: { user?: AuthUser }; error?: string } | null = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {
-        throw new Error('Server API tidak mengembalikan JSON yang valid. Pastikan backend berjalan.');
-      }
-
-      if (!res.ok) {
-        throw new Error(
-          json?.error || `Login gagal (HTTP ${res.status}). Pastikan backend berjalan di port 3000.`
-        );
-      }
-
-      if (!json?.data?.user) {
-        throw new Error('Respons server tidak valid.');
-      }
-
-      onLoginSuccess(json.data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login gagal');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    showPassword,
+    toggleShowPassword,
+    fieldErrors,
+    serverError,
+    submitting,
+    handleSubmit,
+  } = useLogin(onLoginSuccess);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
@@ -107,16 +68,16 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               </p>
             </div>
 
-            {error && (
+            {serverError && (
               <div
                 role="alert"
                 className="mb-5 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700"
               >
-                {error}
+                {serverError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div>
                 <label
                   htmlFor="email"
@@ -127,13 +88,19 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 <input
                   id="email"
                   type="email"
-                  required
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@sekolah.sch.id"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 transition"
+                  className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition ${
+                    fieldErrors.email
+                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                      : 'border-slate-300 focus:border-indigo-600 focus:ring-indigo-600/20'
+                  }`}
                 />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-rose-600">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div>
@@ -147,21 +114,27 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    required
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan password"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 transition"
+                    className={`w-full rounded-xl border bg-white px-3.5 py-2.5 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition ${
+                      fieldErrors.password
+                        ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                        : 'border-slate-300 focus:border-indigo-600 focus:ring-indigo-600/20'
+                    }`}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
+                    onClick={toggleShowPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 cursor-pointer"
                   >
                     {showPassword ? 'Tutup' : 'Lihat'}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-rose-600">{fieldErrors.password}</p>
+                )}
               </div>
 
               <button

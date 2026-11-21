@@ -1,11 +1,5 @@
-import { useEffect, useState } from 'react';
-import { AuthUser } from './LoginPage.tsx';
-
-interface HealthData {
-  status: string;
-  database: 'connected' | 'disconnected';
-  uptime: number;
-}
+import { AuthUser } from '../auth/auth.types.ts';
+import { useDashboard } from './useDashboard.ts';
 
 interface DashboardPageProps {
   user: AuthUser;
@@ -13,16 +7,7 @@ interface DashboardPageProps {
 }
 
 export function DashboardPage({ user, onLogout }: DashboardPageProps) {
-  const [health, setHealth] = useState<HealthData | null>(null);
-
-  useEffect(() => {
-    fetch('/api/health', { credentials: 'include' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (json?.data) setHealth(json.data);
-      })
-      .catch(() => {});
-  }, []);
+  const { health } = useDashboard();
 
   return (
     <div className="min-h-screen bg-slate-50">

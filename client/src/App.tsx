@@ -1,36 +1,9 @@
-import { useEffect, useState } from 'react';
-import { AuthUser, LoginPage } from './pages/LoginPage.tsx';
-import { DashboardPage } from './pages/DashboardPage.tsx';
+import { useAuthSession } from './features/auth/useAuthSession.ts';
+import { LoginPage } from './features/auth/LoginPage.tsx';
+import { DashboardPage } from './features/dashboard/DashboardPage.tsx';
 
 export function App() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.ok) {
-          const json = await res.json();
-          setUser(json.data.user);
-        }
-      } catch {
-        // Not authenticated
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-
-    checkSession();
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-    setUser(null);
-  };
+  const { user, setUser, checkingAuth, logout } = useAuthSession();
 
   if (checkingAuth) {
     return (
@@ -44,7 +17,7 @@ export function App() {
     return <LoginPage onLoginSuccess={setUser} />;
   }
 
-  return <DashboardPage user={user} onLogout={handleLogout} />;
+  return <DashboardPage user={user} onLogout={logout} />;
 }
 
 export default App;
