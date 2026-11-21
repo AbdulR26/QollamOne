@@ -1,14 +1,18 @@
 {
   "name": "qollamone",
   "version": "1.0.0",
-  "description": "QollamOne Express.js TypeScript backend application",
+  "description": "QollamOne Express.js + React TypeScript application",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "tsx watch src/index.ts",
+    "dev:client": "npm --prefix client run dev",
+    "build": "tsc && npm --prefix client run build",
+    "build:server": "tsc",
+    "build:client": "npm --prefix client run build",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && npm --prefix client run typecheck"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -17,12 +21,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mysql2": "^3.24.6"
+    "mysql2": "^3.11.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
+    "concurrently": "^9.1.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

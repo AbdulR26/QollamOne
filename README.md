@@ -1,50 +1,38 @@
 # QollamOne
 
-Express.js + TypeScript backend application using **Modular Monolith + Layered Architecture** with **MySQL/MariaDB (`mysql2`)**.
+Full-stack **Express.js + React (Vite)** TypeScript application using **Modular Monolith + Layered Architecture** and **MySQL/MariaDB (`mysql2`)**.
 
-## Architecture
+## Project Structure
 
 ```text
-src/
-├── index.ts                        # Server entry point
-├── app.ts                          # Express app & module registration
-├── config/
-│   ├── env.ts                      # Environment configuration
-│   └── database.ts                 # MySQL connection pool (mysql2)
-├── shared/                         # Cross-cutting concerns
-│   ├── errors/AppError.ts          # Operational error class
-│   ├── middlewares/
-│   │   ├── auth.ts                 # Authentication & authorization
-│   │   ├── validate.ts             # Input validation middleware
-│   │   ├── notFoundHandler.ts      # 404 handler
-│   │   └── errorHandler.ts         # Global error handler
-│   └── utils/asyncHandler.ts       # Async wrapper for controllers
-└── modules/                        # Isolated domain modules
-    └── health/                     # Example module
-        ├── health.routes.ts        # Routes: Mendefinisikan endpoint
-        ├── health.validation.ts    # Validation: Validasi input
-        ├── health.controller.ts    # Controller: Menerima request & response
-        ├── health.service.ts       # Service: Business logic
-        ├── health.repository.ts    # Repository: Query database
-        └── health.model.ts         # Model: Struktur data
+QollamOne/
+├── client/                         # React + Vite + TypeScript frontend (Admin UI)
+│   ├── src/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts              # Proxies /api -> http://localhost:3000
+└── src/                            # Express.js TypeScript backend
+    ├── index.ts                    # Server entry point
+    ├── app.ts                      # Express app, API routes, & React static serving
+    ├── config/
+    │   ├── env.ts                  # Environment configuration
+    │   └── database.ts             # MySQL connection pool (mysql2)
+    ├── shared/                     # Cross-cutting concerns
+    │   ├── errors/AppError.ts      # Operational error class
+    │   ├── middlewares/            # auth, validate, notFoundHandler, errorHandler
+    │   └── utils/asyncHandler.ts
+    └── modules/                    # Isolated domain modules
+        └── health/                 # Routes -> Validation -> Controller -> Service -> Repository -> Model
 ```
-
-### Layer Responsibilities
-| Layer | Role |
-| --- | --- |
-| **Routes** (`*.routes.ts`) | Mendefinisikan endpoint, memasang middleware & validation |
-| **Controller** (`*.controller.ts`) | Menerima request dan mengirim response |
-| **Service** (`*.service.ts`) | Menangani business logic |
-| **Repository** (`*.repository.ts`) | Menangani query database / akses data |
-| **Model** (`*.model.ts`) | Mendefinisikan struktur data |
-| **Validation** (`*.validation.ts`) | Validasi input request |
-| **Middleware** (`shared/middlewares/`) | Authentication, authorization, validasi, error handling |
 
 ## Getting Started
 
-1. Install dependencies:
+1. Install backend & frontend dependencies:
    ```sh
    npm install
+   npm --prefix client install
    ```
 
 2. Configure environment variables:
@@ -53,7 +41,7 @@ src/
    ```
    Update `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (default: `sibikaa`) in `.env`.
 
-3. Run in development:
+3. Run in development (Express on `:3000` + React Vite on `:5173`):
    ```sh
    npm run dev
    ```
@@ -63,8 +51,4 @@ src/
    npm run build
    npm start
    ```
-
-## Endpoints
-
-- `GET /` — Application status
-- `GET /api/health` — Health & database connection check (`?detail=true` optional)
+   Express automatically serves the built React app from `client/dist/` alongside `/api/*`.
