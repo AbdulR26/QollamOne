@@ -1,42 +1,42 @@
 # QollamOne
 
-Express.js backend application using **Modular Monolith + Layered Architecture**.
+Express.js + TypeScript backend application using **Modular Monolith + Layered Architecture**.
 
 ## Architecture
 
 ```text
 src/
-├── index.js                        # Server entry point
-├── app.js                          # Express app & module registration
+├── index.ts                        # Server entry point
+├── app.ts                          # Express app & module registration
 ├── config/
-│   └── env.js                      # Environment configuration
+│   └── env.ts                      # Environment configuration
 ├── shared/                         # Cross-cutting concerns
-│   ├── errors/AppError.js          # Operational error class
+│   ├── errors/AppError.ts          # Operational error class
 │   ├── middlewares/
-│   │   ├── auth.js                 # Authentication & authorization
-│   │   ├── validate.js             # Input validation middleware
-│   │   ├── notFoundHandler.js      # 404 handler
-│   │   └── errorHandler.js         # Global error handler
-│   └── utils/asyncHandler.js       # Async wrapper for controllers
+│   │   ├── auth.ts                 # Authentication & authorization
+│   │   ├── validate.ts             # Input validation middleware
+│   │   ├── notFoundHandler.js/.ts  # 404 handler
+│   │   └── errorHandler.ts         # Global error handler
+│   └── utils/asyncHandler.ts       # Async wrapper for controllers
 └── modules/                        # Isolated domain modules
     └── health/                     # Example module
-        ├── health.routes.js        # Routes: Mendefinisikan endpoint
-        ├── health.validation.js    # Validation: Validasi input
-        ├── health.controller.js    # Controller: Menerima request & response
-        ├── health.service.js       # Service: Business logic
-        ├── health.repository.js    # Repository: Query database
-        └── health.model.js         # Model: Struktur data
+        ├── health.routes.ts        # Routes: Mendefinisikan endpoint
+        ├── health.validation.ts    # Validation: Validasi input
+        ├── health.controller.ts    # Controller: Menerima request & response
+        ├── health.service.ts       # Service: Business logic
+        ├── health.repository.ts    # Repository: Query database
+        └── health.model.ts         # Model: Struktur data
 ```
 
 ### Layer Responsibilities
 | Layer | Role |
 | --- | --- |
-| **Routes** (`*.routes.js`) | Mendefinisikan endpoint, memasang middleware & validation |
-| **Controller** (`*.controller.js`) | Menerima request dan mengirim response |
-| **Service** (`*.service.js`) | Menangani business logic |
-| **Repository** (`*.repository.js`) | Menangani query database / akses data |
-| **Model** (`*.model.js`) | Mendefinisikan struktur data |
-| **Validation** (`*.validation.js`) | Validasi input request |
+| **Routes** (`*.routes.ts`) | Mendefinisikan endpoint, memasang middleware & validation |
+| **Controller** (`*.controller.ts`) | Menerima request dan mengirim response |
+| **Service** (`*.service.ts`) | Menangani business logic |
+| **Repository** (`*.repository.ts`) | Menangani query database / akses data |
+| **Model** (`*.model.ts`) | Mendefinisikan struktur data |
+| **Validation** (`*.validation.ts`) | Validasi input request |
 | **Middleware** (`shared/middlewares/`) | Authentication, authorization, validasi, error handling |
 
 ## Getting Started
@@ -56,8 +56,9 @@ src/
    npm run dev
    ```
 
-4. Run in production:
+4. Build & run in production (e.g. Hostinger Node.js Web App):
    ```sh
+   npm run build
    npm start
    ```
 

@@ -1,5 +1,10 @@
+export interface SystemStatus {
+  uptime: number;
+  timestamp: string;
+}
+
 export class HealthRepository {
-  getSystemStatus() {
+  getSystemStatus(): SystemStatus {
     return {
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
