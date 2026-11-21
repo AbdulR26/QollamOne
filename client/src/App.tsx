@@ -64,9 +64,22 @@ export function App() {
         body: JSON.stringify({ email, password }),
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      let json: { data?: { user?: AuthUser }; error?: string } | null = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        throw new Error('Server API tidak mengembalikan JSON yang valid. Pastikan backend berjalan.');
+      }
+
       if (!res.ok) {
-        throw new Error(json.error || 'Login failed');
+        throw new Error(
+          json?.error || `Login gagal (HTTP ${res.status}). Pastikan backend berjalan di port 3000.`
+        );
+      }
+
+      if (!json?.data?.user) {
+        throw new Error('Respons server tidak valid.');
       }
 
       setUser(json.data.user);
