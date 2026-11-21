@@ -7,7 +7,7 @@ export class HealthController {
 
   getHealth = asyncHandler(async (req: Request, res: Response) => {
     const includeDetail = req.query.detail === 'true';
-    const data = this.healthService.checkHealth({ includeDetail });
+    const data = await this.healthService.checkHealth({ includeDetail });
 
     res.status(200).json({
       success: true,

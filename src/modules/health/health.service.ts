@@ -4,11 +4,14 @@ import { HealthRepository } from './health.repository.js';
 export class HealthService {
   constructor(private readonly healthRepository: HealthRepository) {}
 
-  checkHealth({ includeDetail = false }: { includeDetail?: boolean } = {}): HealthStatus {
-    const systemStatus = this.healthRepository.getSystemStatus();
+  async checkHealth({
+    includeDetail = false,
+  }: { includeDetail?: boolean } = {}): Promise<HealthStatus> {
+    const systemStatus = await this.healthRepository.getSystemStatus();
 
     return new HealthStatus({
-      status: 'ok',
+      status: systemStatus.databaseConnected ? 'ok' : 'degraded',
+      database: systemStatus.databaseConnected ? 'connected' : 'disconnected',
       uptime: systemStatus.uptime,
       timestamp: systemStatus.timestamp,
       detail: includeDetail ? { memoryUsage: process.memoryUsage() } : undefined,
